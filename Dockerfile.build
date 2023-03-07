@@ -1,0 +1,43 @@
+FROM alpine as prepare
+WORKDIR /app
+
+RUN apk add --no-cache jq
+
+COPY package.json ./
+RUN jq '.version = "0.0.0"' ./package.json > ./ci-package.json
+
+FROM node:lts as install
+WORKDIR /app
+
+COPY --from=prepare /app/ci-package.json ./package.json
+COPY .npmrc yarn.lock ./
+RUN yarn install
+
+FROM install as test
+WORKDIR /app
+
+# The [w] in [w]ebpack.overrides.js allows the file webpack.overrides.js to exist.
+COPY tsconfig.json .babelrc.js jest.config.js [w]ebpack.overrides.js ./
+COPY src/ ./src/
+COPY tests/ ./tests/
+RUN yarn test --ci --coverage --passWithNoTests
+
+FROM test as build
+WORKDIR /app
+
+COPY package.json mfe.config.json .eslintrc.js ./
+RUN yarn build
+
+FROM build as pack
+WORKDIR /app
+
+COPY README.md .npmignore ./
+RUN yarn pack --filename ./npm.tgz
+
+FROM alpine
+WORKDIR /files
+
+COPY --from=pack /app/npm.tgz ./artifacts/npm.tgz
+COPY --from=test /app/reports/ ./artifacts/reports/
+
+ENTRYPOINT tar zcf - ./artifacts/
