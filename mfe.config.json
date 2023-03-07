@@ -1,0 +1,16 @@
+{
+  "name": "my-mfe",
+  "dev": {
+    "files": "dev",
+    "template": "index.html"
+  },
+  "build": {
+    "files": "src",
+    "entry": "custom-element.ts",
+    "dist": "dist",
+    "out": "custom-element"
+  },
+  "hosting": {
+    "private": false
+  }
+}

@@ -1,0 +1,43 @@
+steps:
+  - script: bash ./scripts/init.sh
+    displayName: "Setup Build Environment"
+    env:
+      MYGET_API_KEY: $(MYGET-WRITE-API-KEY)
+
+  - script: bash ./scripts/build.sh
+    displayName: "Build Artifacts"
+
+  - script: bash ./scripts/publish.sh
+    displayName: "Publish NPM Package"
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    env:
+        CURRENT_BRANCH: $(Build.SourceBranch)
+
+  - task: PublishTestResults@2
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '$(System.DefaultWorkingDirectory)/artifacts/**/reports/junit.xml'
+
+  - script: bash ./scripts/clean.sh
+    displayName: 'Clean Up Build Environments'
+
+variables:
+  - group: "Azure Key Vault"
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+      - refs/tags/v*
+  tags:
+    include:
+      - v* #vX.Y.Z
+
+pr:
+  branches:
+    include:
+      - main
+      - master
+
+pool: "Linux-Docker"
