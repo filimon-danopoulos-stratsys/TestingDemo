@@ -1,0 +1,19 @@
+{
+  "eslint.validate": [
+    "html",
+    "vue",
+    "typescript",
+    "typescriptreact",
+    "javascript",
+    "javascriptreact"
+  ],
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "json.schemas": [{
+    "fileMatch": ["mfe.config.json"],
+    "url": "./node_modules/@stratsys/mfe-cli/schemas/mfe.config.schema.json"
+  }],
+  "html.customData": ["node_modules/@stratsys/pdr-typings/custom-elements.json"]
+}
